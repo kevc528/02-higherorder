@@ -42,7 +42,7 @@ Or you can make a list containing the functions
 -}
 
 funs :: [Int -> Int]
-funs = undefined
+funs = [plus1, minus1]
 
 {-
 Taking Functions as Input
@@ -164,12 +164,14 @@ Note the types of the above are `Int -> Int`.  That is, `plus10` and
 -}
 
 -- >>> plus10 3
+-- 13
 
 {-
 
 -}
 
 -- >>> plusn 10 3
+-- 13
 
 {-
 Partial Application
@@ -254,7 +256,7 @@ arguments before substituting them into the body of a defined function.
 
     doTwicePlus20 0 == doTwice (plus 20) 0        {- unfold doTwice -}
                     == (plus 20) ((plus 20) 0)
-                    ... undefined (fill this part in) ...
+                    == 20 + ((plus 20) 0)
                     == 20 + 20 + 0
                     == 40
 
@@ -417,7 +419,7 @@ following test passes.
 -}
 
 singleton :: a -> [a]
-singleton = undefined
+singleton = (: [])
 
 singletonTest :: Test
 singletonTest = singleton True ~?= [True]
@@ -479,11 +481,11 @@ ex1 :: (a -> a) -> a -> a
 ex1 x y = doTwice doTwice x y
 
 {-
-
+Does a function four times x (x (x (x y))))
 -}
 
 ex1Test :: Test
-ex1Test = undefined
+ex1Test = ex1 (\x -> x + 1) 100 ~?= (104 :: Int)
 
 {-
 Polymorphic Data Structures
@@ -647,7 +649,7 @@ toUpperString' :: String -> String
 toUpperString' xs = map toUpper xs
 
 shiftPoly' :: XY -> Polygon -> Polygon
-shiftPoly' d = undefined
+shiftPoly' d = map (shiftXY d)
 
 {-
 Much better.  But let's make sure our refactoring didn't break anything!
@@ -693,7 +695,7 @@ We can write this more cleanly with map, of course:
 -}
 
 listIncr' :: [Int] -> [Int]
-listIncr' = undefined
+listIncr' = map (+ 1)
 
 {-
 Computation Pattern: Folding
@@ -771,7 +773,7 @@ from our list-length function?
 -}
 
 len' :: [a] -> Int
-len' = undefined
+len' = foldr (\_x count -> count + 1) 0
 
 {-
 Once you have defined `len` in this way, see if you can trace how it
@@ -779,7 +781,11 @@ works on a small example:
 
 ~~~~~~~~~
 len' (1:2:[]) == ...
-       ...
+              == foldr (\_x count -> count + 1) 0 [1,2]
+              == f 1 (foldr f 0 [2])
+              == f 1 (f 2 (foldr f 0 []))
+              == f 1 (f 2 (0))
+              == f 1 (1)
               == 2
 ~~~~~~~~~
 
@@ -788,10 +794,10 @@ Or, how would you use foldr to eliminate the recursion from this?
 
 factorial :: Int -> Int
 factorial 0 = 1
-factorial n = n * factorial (n -1)
+factorial n = n * factorial (n - 1)
 
 factorial' :: Int -> Int
-factorial' n = undefined
+factorial' n = foldr (*) 1 [1 .. n]
 
 {-
 OK, one more.  The standard list library function `filter` has this
@@ -816,7 +822,7 @@ testFilter =
 Can we implement filter using foldr?  Sure!
 -}
 
-filter pred = undefined
+filter pred = foldr (\x acc -> if pred x then x : acc else acc) []
 
 runTests :: IO Counts
 runTests = runTestTT $ TestList [testMap, testFoldr, testFilter]
